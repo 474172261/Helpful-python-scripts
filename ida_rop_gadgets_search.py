@@ -29,7 +29,7 @@ def tag_rdata_func():
 			functionName = GetFunctionName(funcea)
 			idc.MakeName(funcea, 'r_'+functionName)
 
-def search_rop_gadgets(count = 10):
+def search_rop_gadgets_for_vmx(count = 10):
 	index = 0
 	for ea in range(SegStart(BeginEA()), SegEnd(BeginEA())):
 		ret = idc.generate_disasm_line(ea, 1)
