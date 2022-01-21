@@ -209,10 +209,10 @@ def search_memcpy_xrefs():
 			if idaapi.get_func(xref.frm).size() < 130:
 				print('{:x}'.format(xref.frm))
 
-def Useage():
+def Usage():
 	print('*'*100)
 	print('*'*100)
-	usage = """Useage:
+	usage = """Usage:
 	1. run script in ida output windows
 	2. run a function for your purpose
 
@@ -247,6 +247,6 @@ def Useage():
 			['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
 	"""
 	print(usage)
-	print("^-----------check Useage")
+	print("^-----------check Usage")
 
-Useage()
+Usage()
