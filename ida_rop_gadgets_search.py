@@ -29,47 +29,10 @@ def tag_rdata_func():
 			functionName = GetFunctionName(funcea)
 			idc.MakeName(funcea, 'r_'+functionName)
 
-def search_rop_gadgets_for_vmx(count = 10):
-	index = 0
-	for ea in range(SegStart(BeginEA()), SegEnd(BeginEA())):
-		ret = idc.generate_disasm_line(ea, 1)
-		# print ret
-		if not ret:
-			continue
-		if 'r8,' in ret:# or 'r9d,' in ret or 'r9w,' in ret:
-			if ret[:4] in ('cmp ','test'):
-				continue
-			x = idautils.DecodeInstruction(ea)
-			if not x:
-				break
-			l = x.size
-			codes = ['{:X}'.format(ea), ret]
-			for i in range(5):
-				n = idc.generate_disasm_line(ea+l, 1)
-				if n:
-					codes.append(n)
-					x = idautils.DecodeInstruction(ea+l)
-					if not x:
-						break
-					l += x.size
-					# print n
-					if 'call' in n:
-						break
-					elif 'jmp' in n:
-						break
-					elif n.startswith('ret'):
-						record.append(codes)
-						index += 1
-						break
-		if index > count:
-			break
-	for i in record:
-		print i
-
 def quick_search_assign_reg(reg, reg_src = '',limit = 3):
 	regs = ['rax', 'rbx', 'rcx','rdx','rdi','rsi','rsp','rbp','r8','r9','r10','r11','r12','r13','r14','r15']
 	if reg not in regs:
-		print "wrong reg name"
+		print("wrong reg name")
 		return
 	if reg_src:
 		lea = 'lea +'+reg+', \\[.*'+reg_src+'.*\\]'
@@ -87,7 +50,7 @@ def quick_search_assign_reg(reg, reg_src = '',limit = 3):
 		pop = 'pop +'+reg
 		pattern = [lea,mov,add,sub,pop,xchg]
 	for each in pattern:
-		print '--'+each+'--'
+		print('--'+each+'--')
 	search_rop_gadgets(pattern, 100, limit)
 
 
@@ -95,11 +58,11 @@ def search_rop_gadgets(pattern, count = 10, limit= 6):
 	index = 0
 	record = []
 	if not len(pattern):
-		print "no pattern"
+		print("no pattern")
 		return
 	start = segs['.text'][0]
 	end = segs['.text'][1]
-	print hex(start), hex(end)
+	print(hex(start), hex(end))
 	for ea in range(start, end):
 		x = idautils.DecodeInstruction(ea)
 		if not x:
@@ -126,16 +89,16 @@ def search_rop_gadgets(pattern, count = 10, limit= 6):
 						break
 					elif 'ret' in n:
 						# if is_references_contain_special_segment(funcea, '.rdata'):
-						print codes
+						print(codes)
 						record.append(codes)
 						index += 1
 						break
 
 		if index > count:
 			break
-	print '-'*30
+	print('-'*30)
 	for i in record:
-		print i
+		print(i)
 
 def check_ret_in_range(ea, limit_ret):
 	behind_ins = []
@@ -162,6 +125,13 @@ def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8):
 		print(hex(segs['.text'][0]), hex(segs['.text'][1]))
 		start = segs['.text'][0]
 		end = segs['.text'][1]
+	else:
+		if end > segs['.text'][1] or start > segs['.text'][1]:
+			print("warning: start or end offset is bigger than .text range")
+			return
+		elif end < start:
+			print("warning: start < end")
+			return
 	for ea in range(start, end):
 		# print hex(ea)
 		x = idautils.DecodeInstruction(ea)
@@ -180,7 +150,7 @@ def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8):
 		if not 'rsp' in ret:
 			continue
 		if ret.startswith('pop'):
-			print hex(ea)
+			print(hex(ea))
 			n = step
 			while 1:
 				ni = n
@@ -231,11 +201,52 @@ def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8):
 
 
 	for i in record:
-		print i
+		print(i)
 
 def search_memcpy_xrefs():
 	for xref in XrefsTo(0x140844476, 0):# 0x140844476 is the addr of memcpy
 		if idaapi.get_func(xref.frm):
 			if idaapi.get_func(xref.frm).size() < 130:
-				print '{:x}'.format(xref.frm)
+				print('{:x}'.format(xref.frm))
 
+def Useage():
+	print('*'*100)
+	print('*'*100)
+	usage = """Useage:
+	1. run script in ida output windows
+	2. run a function for your purpose
+
+	functions:
+	search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8)
+		start: start offset of .text
+		end  : end offset of .text
+		step : max instructions before 'pop rsp'
+		limit_ret: max instructions between 'pop rsp' and 'ret'
+	eg: if step < 4 or limit_ret < 5, can't find: push rdx; xxx; xxx; xxx; pop rsp; xxx; xxx; xxx; xxx; ret;
+	eg: search_stack_reverse_gadgets(); search_stack_reverse_gadgets(step = 5); search_stack_reverse_gadgets(start= xxxx, end=xxx, limit_ret = 4)
+
+	search_rop_gadgets(pattern, count = 10, limit= 6)
+		pattern: list of instructions with regex. eg: ['pop *rdi']; ['mov *\\[rdi\\], rax','pop *rax']
+		count  : max results to find
+		limit  : max instructions after pattern
+	eg: search_rop_gadgets(['pop *rdi'], limit = 2) 
+		results:
+			['1CB7AE', 'pop     rdi', 'pop     rbp', 'retn']
+			['1CB8F1', 'pop     rdi', 'pop     rbp', 'retn']
+			...
+
+	quick_search_assign_reg(reg, reg_src = '',limit = 3)
+		reg    : reg name, assign target. 'rdi', 'rsi'...
+		reg_src: reg name, assign source.
+		limit  : max instructions after pattern
+	eg: quick_search_assign_reg('rdi','rsi')
+		results:
+			['1E4AC5', 'mov     rdx, rax', 'xor     eax, eax', 'test    rdx, rdx', 'jz      short locret_1E4A90']
+			['360190', 'sub     rdx, rax', 'mov     eax, [rcx+rdx]', 'retn']
+			['3B5A11', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
+			['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
+	"""
+	print(usage)
+	print("^-----------check Useage")
+
+Useage()
