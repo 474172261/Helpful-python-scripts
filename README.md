@@ -2,36 +2,37 @@
 A collection of my scripts for research
 
 ## ida_rop_gadgets_search.py
-Useage: load script in IDA python command window.
-**quick_search_assign_reg** :
-reg: reg name, assign value to
-src_reg: reg name, stores value
-limit: max instruction after target gadget
+Useage:
+	1. run script in ida output windows
+	2. run a function for your purpose
 
-if you want to search a gadget about assigning value to 'rax', `quick_search_assign_reg('rax','', 1)`
-```
-['100000607F8', 'pop     rax', 'retn']
-['10000065FEC', 'mov     rax, [rax+78h]', 'retn']
-['100000660C8', 'mov     rax, cs:rootRamdisk', 'retn']
-['1000006682D', 'mov     rax, rdi', 'retn']
-['1000006837C', 'pop     rax', 'retn    8']
-['1000006E2ED', 'lea     rax, [rax+rdi+8]', 'retn']
-```
-if you want to assign 'rdi' to 'rsi', `quick_search_assign_reg('rax','', 3)`
-```
-['10000082138', 'mov     rdi, rsi', 'test    rax, rax', 'jz      short locret_10000082146']
-['100000D1CB7', 'lea     rdi, [rsi+8]', 'cld', 'rep stosd', 'retn']
-['100001F9708', 'mov     rdi, rsi', 'rep stosd', 'retn']
-```
+	functions:
+	search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8)
+		start: start offset of .text
+		end  : end offset of .text
+		step : max instructions before 'pop rsp'
+		limit_ret: max instructions between 'pop rsp' and 'ret'
+	eg: if step < 4 or limit_ret < 5, can't find: push rdx; xxx; xxx; xxx; pop rsp; xxx; xxx; xxx; xxx; ret;
+	eg: search_stack_reverse_gadgets(); search_stack_reverse_gadgets(step = 5); search_stack_reverse_gadgets(start= xxxx, end=xxx, limit_ret = 4)
 
-**search_rop_gadgets**:
-pattern: a list of regex of instruction
-count: max results
-limit: max instruction after target gadget
+	search_rop_gadgets(pattern, count = 10, limit= 6)
+		pattern: list of instructions with regex. eg: ['pop *rdi']; ['mov *\\[rdi\\], rax','pop *rax']
+		count  : max results to find
+		limit  : max instructions after pattern
+	eg: search_rop_gadgets(['pop *rdi'], limit = 2) 
+		results:
+			['1CB7AE', 'pop     rdi', 'pop     rbp', 'retn']
+			['1CB8F1', 'pop     rdi', 'pop     rbp', 'retn']
+			...
 
-if you want a gadget like this: `mov [rdx], rcx`, `search_rop_gadgets(['mov +\[rdx\], rcx'], 5, 2)`
-```
-['1000008E5BC', 'mov     [rdx], rcx', 'add     rsp, 88h', 'retn']
-['1000009AA78', 'mov     [rdx], rcx', 'xor     eax, eax', 'retn']
-['1000009AAC4', 'mov     [rdx], rcx', 'xor     eax, eax', 'retn']
+	quick_search_assign_reg(reg, reg_src = '',limit = 3)
+		reg    : reg name, assign target. 'rdi', 'rsi'...
+		reg_src: reg name, assign source.
+		limit  : max instructions after pattern
+	eg: quick_search_assign_reg('rdi','rsi')
+		results:
+			['1E4AC5', 'mov     rdx, rax', 'xor     eax, eax', 'test    rdx, rdx', 'jz      short locret_1E4A90']
+			['360190', 'sub     rdx, rax', 'mov     eax, [rcx+rdx]', 'retn']
+			['3B5A11', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
+			['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
 ```
