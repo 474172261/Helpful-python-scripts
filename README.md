@@ -2,7 +2,7 @@
 A collection of my scripts for research
 
 ## ida_rop_gadgets_search.py
-Useage:
+Usage:
 	1. run script in ida output windows
 	2. run a function for your purpose
 
