@@ -3,10 +3,10 @@ A collection of my scripts for research
 
 ## ida_rop_gadgets_search.py
 Usage:
-	1. run script in ida output windows
-	2. run a function for your purpose
+1. run script in ida output windows
+2. run a function for your purpose
 
-	functions:
+functions:
 	search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8)
 		start: start offset of .text
 		end  : end offset of .text
@@ -35,4 +35,4 @@ Usage:
 			['360190', 'sub     rdx, rax', 'mov     eax, [rcx+rdx]', 'retn']
 			['3B5A11', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
 			['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
-```
+
