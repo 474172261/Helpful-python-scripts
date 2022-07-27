@@ -29,10 +29,11 @@ def tag_rdata_func():
 			functionName = GetFunctionName(funcea)
 			idc.MakeName(funcea, 'r_'+functionName)
 
-def quick_search_assign_reg(reg, reg_src = '',limit = 3):
+def quick_search_assign_reg(reg, reg_src = '',limit = 3, no_condition_jmp = True):
 	regs = ['rax', 'rbx', 'rcx','rdx','rdi','rsi','rsp','rbp','r8','r9','r10','r11','r12','r13','r14','r15']
 	if reg not in regs:
 		print("wrong reg name")
+		print("avaliable:", regs)
 		return
 	if reg_src:
 		lea = 'lea +'+reg+', \\[.*'+reg_src+'.*\\]'
@@ -51,10 +52,10 @@ def quick_search_assign_reg(reg, reg_src = '',limit = 3):
 		pattern = [lea,mov,add,sub,pop,xchg]
 	for each in pattern:
 		print('--'+each+'--')
-	search_rop_gadgets(pattern, 100, limit)
+	search_rop_gadgets(pattern, 100, limit, no_condition_jmp)
 
 
-def search_rop_gadgets(pattern, count = 10, limit= 6):
+def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True):
 	index = 0
 	record = []
 	if not len(pattern):
@@ -81,13 +82,15 @@ def search_rop_gadgets(pattern, count = 10, limit= 6):
 					codes.append(n)
 					l += x.size
 					# print n
+					if n.startswith('j'):
+						break
 					if 'call' in n:
 						break
 					elif 'jmp' in n:
 						break
 					elif 'retf' in n:
 						break
-					elif 'ret' in n:
+					elif n.startswith('ret'):
 						# if is_references_contain_special_segment(funcea, '.rdata'):
 						print(codes)
 						record.append(codes)
