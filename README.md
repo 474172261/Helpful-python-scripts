@@ -81,3 +81,4 @@ import idc
 for i in a:
   idc.MakeName(i[0],i[1]+"_{:08X}".format(i[0]))
 ```
+> function name based on [svga3d_cmd.h](https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/vmwgfx/device_include/svga3d_cmd.h)
