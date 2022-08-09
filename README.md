@@ -35,3 +35,49 @@ functions:
 &emsp;&emsp;&emsp;			['3B5A11', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']  
 &emsp;&emsp;&emsp;			['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']  
 
+## gdb_ida_vmx_locate_svga_function_symbol.py
+use gdb attach vmx process.
+search "bora/devices/svga/svgaFifo.c" references in ida, begin of function should looks like this:
+```c
+  if ( !a1 )
+  {
+    v2 = func_1410000;
+    do
+      *v2++ = 0LL;
+    while ( v2 != &unk_14128B8 );
+  }
+  ..........
+  v12 = &off_1266780;
+  ..........
+          v12 += 3;
+          *v4++ = v13;
+          if ( v12 == &unk_1268028 )
+          ...................
+          v17 = &off_1266300;
+          ............
+          v17 += 3;
+          ++v18;
+          if ( &unk_1266768 == v17 )
+```
+1. change following field of special vmx:
+```
+set $funclist = $vmx+0x1410000 
+set $normal = $vmx+1266300
+set $_3d = $vmx+1266780
+set $_3d_max=0x516
+```
+2. run gdb commands in gdb, you will get `svga.log` file in current folder
+3. run python script in IDA. the output should looks like this:
+```
+(0x43b260,"SVGA_UNKNOW_0x509_En_in3d_0x509"),
+(0x43b5a0,"SVGA_UNKNOW_0x50a_En_in3d_0x50a"),
+(0x43b980,"SVGA_UNKNOW_0x50b_En_in3d_0x50b"),
+(0x44a340,"SVGA_UNKNOW_0x50c_En_in3d_0x50c"),
+(0x44a430,"SVGA_UNKNOW_0x50d_En_in3d_0x50d"),
+```
+4. run ida script:
+```
+import idc
+for i in a:
+  idc.MakeName(i[0],i[1]+"_{:08X}".format(i[0]))
+```
