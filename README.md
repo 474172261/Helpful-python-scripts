@@ -82,3 +82,12 @@ for i in a:
   idc.MakeName(i[0],i[1]+"_{:08X}".format(i[0]))
 ```
 > function name based on [svga3d_cmd.h](https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/vmwgfx/device_include/svga3d_cmd.h)
+
+## winindex_patch_info.py
+A script to find what file changed of hyper-v's components, based on [winbindex](https://winbindex.m417z.com)
+Useage:
+    this.py winver date
+        this.py 1809 202206
+    this.py winver date name folder
+        this.py 1809 202206 vmbkmclr.sys D:\\tmp\\
+    winver: ['1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2']
