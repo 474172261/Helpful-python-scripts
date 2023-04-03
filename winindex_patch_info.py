@@ -75,7 +75,7 @@ def get_file_info(file, keyword, timerange = (0, 20250000)):
     ret = []
     for each in item_ret:
         if each == {}:
-            return []
+            continue
         try:
             if timerange[0] < each['release_date_int'] < timerange[1]:
                 ret.append(each)
@@ -92,9 +92,13 @@ def get_download_link(peName, fileId):
 main_lists = ["vmswitch.sys", 'vmsproxy.sys', 'storvsp.sys', 'passthruparser.sys',
 'vhdparser.sys', 'vpcivsp.sys', 'vmbkmclr.sys', 'vmbusr.sys', 'vid.sys', 'hvix64.exe',
 'winhvr.sys', 'vmwp.exe']
+# vmusrv.dll is for vSMB of container
+# vp9fs.dll sharing les host to guest, linux based containers
+# hvsicontainerservice.dll defender container
 part_list1 = ['pcip.sys', 'synth3dvsp.sys', 'ramparser.sys', 'vmsvcext.sys', 'lunparser.sys']
 
 all_list = ['hvsicontainerservice.dll', 'hvsifiletrust.dll', 'hvsimgrps.dll', 'hvsiofficeiconoverlayshellextension.dll', 'hvsicontainerservice.dll', 'hvsiDspdvcclient.dll', 'hvsirdpclient.exe', 'hvsifiletrust.dll', 'hvsimgr.exe', 'HvsiMachinePolicies.dll', 'hvsimgrps.dll', 'hvsiofficeiconoverlayshellextension.dll', 'HvsiSettingsProvider.dll', 'Provider.dll', 'hvsimgr.exe', 'hvsirdpclient.exe', 'HvsiSettingsWorker.exe', 'hvsicontainerservice.dll', 'hvsigpext.dll', 'AuditSettingsProvider.dll', 'madrid.dll', 'cmclient.dll', 'vmcompute.dll', 'vmcomputeeventlog.dll', 'VmComputeProxy.dll', 'hnsproxy.dll', 'HostNetSvc.dll', 'CmService.dll', 'computestorage.dll', 'NetMgmtIF.dll', 'NvAgent.dll', 'vmsif.dll', 'vmsifcore.dll', 'vmsifproxystub.dll', 'VmSynthNic.dll', 'gns.dll', 'vmdynmem.dll', 'vmflexio.dll', 'vmiccore.dll', 'vmpmem.dll', 'vmserial.dll', 'vmsmb.dll', 'vmsynthstor.dll', 'vmuidevices.dll', 'VrdUmed.dll', 'gpupvdev.dll', 'vmchipset.dll', 'ActivationVdev.dll', 'vmwp.exe', 'sbresources.dll', 'rdp4vs.dll', 'UtilityVmSysprep.dll', 'vmbuspiper.dll', 'vmbusvdev.dll', 'VmCrashDump.dll', 'vmprox.dll', 'vmusrv.dll', 'vmvirtio.dll', 'vmwpctrl.dll', 'vmwpevents.dll', 'vfpapi.dll', 'vp9fs.dll', 'vmsmb.dll', 'icsvc.dll', 'icsvcext.dll', 'vid.dll', 'winhvplatform.dll', 'winhvemulation.dll', 'ComputeLegacy.dll', 'ComputeStorage.dll', 'ComputeCore.dll', 'ComputeNetwork.dll', 'DeviceVirtualization.dll', 'ComputeNetwork.dll', 'rdvvmtransport.dll', 'RdvgmProxy.dll', 'vmstaging.dll', 'HyperVSysprepProvider.dll', 'hgattest.dll', 'hgsclientplugin.dll', 'hgclientservice.dll', 'hgclientserviceps.dll', 'hgsclientplugin.dll', 'HgsClientWmi.dll', 'HostGuardianServiceClientResources.dll', 'NetMgmtIF.dll', 'rdp4vs.dll', 'NvAgent.dll', 'rtpm.dll', 'RdvgmProxy.dll', 'RdvGpuInfo.dll', 'RemoteFileBrowse.dll', 'TpmEngUM.dll', 'synth3dvideoproxy.dll', 'vmstaging.dll', 'vmsynth3dvideo.dll', 'vmsynthfcvdev.dll', 'vmtpm.dll', 'VmDataStore.dll', 'vmdebug.dll', 'vpcievdev.dll', 'vmemulateddevices.dll', 'VmEmulatedNic.dll', 'VmEmulatedStorage.dll', 'vmhgs.dll', 'vmicrdv.dll', 'vsconfig.dll', 'vmicvdev.dll', 'vmmsprox.dll', 'utilityVid.sys', 'hvsifltr.sys', 'vmswitch.sys', 'VmsProxy.sys', 'VmsProxyHNic.sys', 'l2bridge.sys', 'vfpext.sys', 'NdisVirtualBus.sys', 'wcifs.sys', 'hvsocketcontrol.sys', 'hvsocket.sys', 'storvsp.sys', 'passthruparser.sys', 'vhdparser.sys', 'pvhdparser.sys', 'vpcivsp.sys', 'storvsc.sys', 'vmbkmclr.sys', 'vmbkmcl.sys', 'vmbusr.sys', 'vmbus.sys', 'VMBusHID.sys', 'hyperkbd.sys', 'HyperVideo.sys', 'winhvr.sys', 'winhv.sys', 'vid.sys', 'hvservice.sys', 'hvix64.exe', 'hvcrash.sys', 'vhdmp.sys', 'vmgencounter.sys', 'vmgid.sys', 'pcip.sys', 'Synth3dVsp.sys', 'ramparser.sys', 'vmsvcext.sys', 'lunparser.sys', 'vkrnlintvsc.sys', 'vkrnlintvsp.sys', 'hnsdiag.exe', 'hvsimgr.exe', 'hvsiproxyapp.exe', 'hvsirdpclient.exe', 'hvsirpcd.exe', 'hvsievaluator.exe', 'HvsiSettingsWorker.exe', 'wdagtool.exe', 'CExecSvc.exe', 'cmdiag.exe', 'cmimageworker.exe', 'vmcompute.exe', 'VmComputeAgent.exe', 'wcsetupagent.exe', 'hcsdiag.exe', 'vfpctrl.exe', 'nmbind.exe', 'nmscrub.exe', 'nvspinfo.exe', 'vmwp.exe', 'WindowsSandbox.exe', 'hvc.exe', 'hnsdiag.exe', 'rdvgm.exe', 'vmplatformca.exe', 'vmsp.exe', 'vmconnect.exe', 'vmms.exe', 'Hvsigpext.dll', 'rdbss.sys', 'wcifs.sys', 'ntoskrnl.exe', 'vmcompute.exe', 'VmComputeAgent.exe', 'CmService.dll', 'rdsdwmdr.dll', 'rdsxvmaudio.dll']
+# all_list based on https://github.com/gerhart01/Hyper-V-Internals/blob/master/Hyper-V%20components.pdf
 
 except_list = ['computelegacy.dll', 'provider.dll', 'utilityvid.sys', 'devicevirtualization.dll', 'l2bridge.sys', 'vkrnlintvsp.sys', 'vmcomputeeventlog.dll']
 
@@ -106,7 +110,7 @@ start_list = [i for i in start_list if i.lower() not in [x.lower() for x in exce
 
 
 if 0:
-    print(get_file_info('vmchipset.dll', '1809', (20220600, 20220700)))
+    print(get_file_info('vhdmp.sys', '11-21H2', (20220200, 20220300)))
     exit(0)
 
 def get_patch_info(winver, time_month):
@@ -124,18 +128,51 @@ def help():
     this.py winver date
         this.py 1809 202206
     this.py winver date name folder
-        this.py 1809 202206 vmbkmclr.sys D:\\tmp\\""")
+        this.py 1809 202206 vmbkmclr.sys D:\\tmp\\
+    winver: ['1703', '1507', '1607','1709', '1803', '2004'(20H2-21H2), '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2']""")
+    exit(0)
 
 def main():
+    winvers = ['1703', '1507', '1607','1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2']
     if len(sys.argv) == 3:
         winver = sys.argv[1]
+        if winver not in winvers:
+            help()
+        
         time_month = int(sys.argv[2], 10)
         result = get_patch_info(winver, time_month)
+        names = []
         for each in result:
-            print(each[0])
-            print(each[1])
+            names.append(each[0])
+            # print(each[1])
+        print(names)
+    elif len(sys.argv) == 4:
+        winver = sys.argv[1]
+        if winver not in winvers:
+            help()
+
+        winver2 = sys.argv[2]
+        if winver2 not in winvers:
+            help()
+        
+        time_month = int(sys.argv[3], 10)
+        result = get_patch_info(winver, time_month)
+        result2 = get_patch_info(winver2, time_month)
+
+        names = []
+        for each in result:
+            names.append(each[0])
+            # print(each[1])
+        for each in result2:
+            if each[0] in names:
+                print(each[0])
+        # print(names)
+
     elif len(sys.argv) == 5:
         winver = sys.argv[1]
+        if winver not in winvers:
+            help()
+        
         time_month = int(sys.argv[2], 10)
         time_start = time_month*100
         target_file = sys.argv[3]
