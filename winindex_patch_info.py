@@ -49,34 +49,56 @@ def get_file_info(file, keyword, timerange = (0, 20250000)):
             virtualSize = 0
         windows_versions = value.get('windowsVersions')
         if windows_versions:
+            # print(windows_versions)
+            # print('\n***\n')
             tmp = {}
             first_windows_version = list(windows_versions.keys())[0]
-            for k, v in windows_versions[first_windows_version].items():
-                if k.startswith('KB'):
-                    tmp['KB'] = k
-                    release_date = v.get('updateInfo', {}).get('releaseDate')
-                    tmp['release_date'] = release_date
-                    tmp['release_date_int'] = int(release_date.replace('-',''))
-                    tmp['timestamp'] = timestamp
-                    tmp['virtualSize'] = virtualSize
-                    if virtualSize:
-                        tmp['file_id'] ='{:08X}{:X}'.format(timestamp, virtualSize)
+            min_time = 22221111
+            min_key = ''
+            # print(windows_versions[first_windows_version])
+            # print("\n")
+            flag_continue = 0
+            for key in windows_versions[first_windows_version].keys():
+                if not key.startswith("KB"):
+                    flag_continue = 1
                     break
+                # print(windows_versions[first_windows_version][key]['updateInfo'])
+                t = int(windows_versions[first_windows_version][key]['updateInfo']['releaseDate'].replace('-',''), 10)
+                if t < min_time:
+                    # print(t)
+                    min_time = t
+                    min_key = key
+            if flag_continue:
+                continue
+            key = min_key
+            v = windows_versions[first_windows_version][key]
+            # print("\n", key, v)
+            tmp['KB'] = key
+            release_date = v.get('updateInfo', {}).get('releaseDate')
+            tmp['release_date'] = release_date
+            tmp['release_date_int'] = int(release_date.replace('-',''))
+            tmp['timestamp'] = timestamp
+            tmp['virtualSize'] = virtualSize
+            if virtualSize:
+                tmp['file_id'] ='{:08X}{:X}'.format(timestamp, virtualSize)
+
+            # if tmp == {}:
+            #     continue
             if first_windows_version not in result:
                 result[first_windows_version] = [tmp]
             else:
                 result[first_windows_version].append(tmp)
     item_ret = []
     for item in result.keys():
+        # print(item)
         if keyword in item:
             item_ret = result[item]
             break
     
     ret = []
     for each in item_ret:
-        if each == {}:
-            continue
         try:
+            # print(each)
             if timerange[0] < each['release_date_int'] < timerange[1]:
                 ret.append(each)
         except:
@@ -110,14 +132,14 @@ start_list = [i for i in start_list if i.lower() not in [x.lower() for x in exce
 
 
 if 0:
-    print(get_file_info('vhdmp.sys', '11-21H2', (20220200, 20220300)))
+    print(get_file_info('vmswitch.sys', '1809', (20220600, 20220620)))
     exit(0)
 
 def get_patch_info(winver, time_month):
     time_start = time_month*100
     result = []
     for each in start_list:
-        ret = get_file_info(each, winver, (time_start, time_start+15))
+        ret = get_file_info(each, winver, (time_start, time_start+20))
         if ret == []:
             continue
         result.append([each, ret])
@@ -129,7 +151,7 @@ def help():
         this.py 1809 202206
     this.py winver date name folder
         this.py 1809 202206 vmbkmclr.sys D:\\tmp\\
-    winver: ['1703', '1507', '1607','1709', '1803', '2004'(20H2-21H2), '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2']""")
+    winver: ['1703', '1507', '1607','1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2'(-22H2)]""")
     exit(0)
 
 def main():
