@@ -89,9 +89,10 @@ for i in a:
 A script to find what file changed of hyper-v's components, based on [winbindex](https://winbindex.m417z.com)
 ```
 Useage:
-    this.py winver date
-        this.py 1809 202206
-    this.py winver date name folder
-        this.py 1809 202206 vmbkmclr.sys D:\\tmp\\
-    winver: ['1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2']
+    this.py  date winver name folder
+        this.py  202206 1809 vmbkmclr.sys D:\\tmp\\
+    this.py cmp mounth winver1 winver2 ...
+        this.py 202206 1809
+        this.py 202206 1809 20H2 11-21H1
+    winver: ['1703', '1507', '1607','1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2'(-22H2)]
 ```   
