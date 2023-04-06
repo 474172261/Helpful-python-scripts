@@ -10,7 +10,15 @@ import wget
 
 file = "vmbusr.sys"
 URL = "https://winbindex.m417z.com/?file="
+
+def check_item_in_list_ignore_case(item, check_list):
+    l = [i.lower() for i in check_list]
+    if item.lower() in l:
+        return 1
+    return 0
+
 def get_file_info(file, keyword, timerange = (0, 20250000)):
+    # print(timerange)
     filename = "D:\\tmp\\tmp_index\\"+file+".json.gz"
 
     if not os.path.exists(filename):
@@ -113,16 +121,39 @@ def get_download_link(peName, fileId):
 
 main_lists = ["vmswitch.sys", 'vmsproxy.sys', 'storvsp.sys', 'passthruparser.sys',
 'vhdparser.sys', 'vpcivsp.sys', 'vmbkmclr.sys', 'vmbusr.sys', 'vid.sys', 'hvix64.exe',
-'winhvr.sys', 'vmwp.exe']
+'winhvr.sys', 'vmwp.exe', 'vhdmp.sys']
 # vmusrv.dll is for vSMB of container
 # vp9fs.dll sharing les host to guest, linux based containers
 # hvsicontainerservice.dll defender container
 part_list1 = ['pcip.sys', 'synth3dvsp.sys', 'ramparser.sys', 'vmsvcext.sys', 'lunparser.sys']
 
-all_list = ['hvsicontainerservice.dll', 'hvsifiletrust.dll', 'hvsimgrps.dll', 'hvsiofficeiconoverlayshellextension.dll', 'hvsicontainerservice.dll', 'hvsiDspdvcclient.dll', 'hvsirdpclient.exe', 'hvsifiletrust.dll', 'hvsimgr.exe', 'HvsiMachinePolicies.dll', 'hvsimgrps.dll', 'hvsiofficeiconoverlayshellextension.dll', 'HvsiSettingsProvider.dll', 'Provider.dll', 'hvsimgr.exe', 'hvsirdpclient.exe', 'HvsiSettingsWorker.exe', 'hvsicontainerservice.dll', 'hvsigpext.dll', 'AuditSettingsProvider.dll', 'madrid.dll', 'cmclient.dll', 'vmcompute.dll', 'vmcomputeeventlog.dll', 'VmComputeProxy.dll', 'hnsproxy.dll', 'HostNetSvc.dll', 'CmService.dll', 'computestorage.dll', 'NetMgmtIF.dll', 'NvAgent.dll', 'vmsif.dll', 'vmsifcore.dll', 'vmsifproxystub.dll', 'VmSynthNic.dll', 'gns.dll', 'vmdynmem.dll', 'vmflexio.dll', 'vmiccore.dll', 'vmpmem.dll', 'vmserial.dll', 'vmsmb.dll', 'vmsynthstor.dll', 'vmuidevices.dll', 'VrdUmed.dll', 'gpupvdev.dll', 'vmchipset.dll', 'ActivationVdev.dll', 'vmwp.exe', 'sbresources.dll', 'rdp4vs.dll', 'UtilityVmSysprep.dll', 'vmbuspiper.dll', 'vmbusvdev.dll', 'VmCrashDump.dll', 'vmprox.dll', 'vmusrv.dll', 'vmvirtio.dll', 'vmwpctrl.dll', 'vmwpevents.dll', 'vfpapi.dll', 'vp9fs.dll', 'vmsmb.dll', 'icsvc.dll', 'icsvcext.dll', 'vid.dll', 'winhvplatform.dll', 'winhvemulation.dll', 'ComputeLegacy.dll', 'ComputeStorage.dll', 'ComputeCore.dll', 'ComputeNetwork.dll', 'DeviceVirtualization.dll', 'ComputeNetwork.dll', 'rdvvmtransport.dll', 'RdvgmProxy.dll', 'vmstaging.dll', 'HyperVSysprepProvider.dll', 'hgattest.dll', 'hgsclientplugin.dll', 'hgclientservice.dll', 'hgclientserviceps.dll', 'hgsclientplugin.dll', 'HgsClientWmi.dll', 'HostGuardianServiceClientResources.dll', 'NetMgmtIF.dll', 'rdp4vs.dll', 'NvAgent.dll', 'rtpm.dll', 'RdvgmProxy.dll', 'RdvGpuInfo.dll', 'RemoteFileBrowse.dll', 'TpmEngUM.dll', 'synth3dvideoproxy.dll', 'vmstaging.dll', 'vmsynth3dvideo.dll', 'vmsynthfcvdev.dll', 'vmtpm.dll', 'VmDataStore.dll', 'vmdebug.dll', 'vpcievdev.dll', 'vmemulateddevices.dll', 'VmEmulatedNic.dll', 'VmEmulatedStorage.dll', 'vmhgs.dll', 'vmicrdv.dll', 'vsconfig.dll', 'vmicvdev.dll', 'vmmsprox.dll', 'utilityVid.sys', 'hvsifltr.sys', 'vmswitch.sys', 'VmsProxy.sys', 'VmsProxyHNic.sys', 'l2bridge.sys', 'vfpext.sys', 'NdisVirtualBus.sys', 'wcifs.sys', 'hvsocketcontrol.sys', 'hvsocket.sys', 'storvsp.sys', 'passthruparser.sys', 'vhdparser.sys', 'pvhdparser.sys', 'vpcivsp.sys', 'storvsc.sys', 'vmbkmclr.sys', 'vmbkmcl.sys', 'vmbusr.sys', 'vmbus.sys', 'VMBusHID.sys', 'hyperkbd.sys', 'HyperVideo.sys', 'winhvr.sys', 'winhv.sys', 'vid.sys', 'hvservice.sys', 'hvix64.exe', 'hvcrash.sys', 'vhdmp.sys', 'vmgencounter.sys', 'vmgid.sys', 'pcip.sys', 'Synth3dVsp.sys', 'ramparser.sys', 'vmsvcext.sys', 'lunparser.sys', 'vkrnlintvsc.sys', 'vkrnlintvsp.sys', 'hnsdiag.exe', 'hvsimgr.exe', 'hvsiproxyapp.exe', 'hvsirdpclient.exe', 'hvsirpcd.exe', 'hvsievaluator.exe', 'HvsiSettingsWorker.exe', 'wdagtool.exe', 'CExecSvc.exe', 'cmdiag.exe', 'cmimageworker.exe', 'vmcompute.exe', 'VmComputeAgent.exe', 'wcsetupagent.exe', 'hcsdiag.exe', 'vfpctrl.exe', 'nmbind.exe', 'nmscrub.exe', 'nvspinfo.exe', 'vmwp.exe', 'WindowsSandbox.exe', 'hvc.exe', 'hnsdiag.exe', 'rdvgm.exe', 'vmplatformca.exe', 'vmsp.exe', 'vmconnect.exe', 'vmms.exe', 'Hvsigpext.dll', 'rdbss.sys', 'wcifs.sys', 'ntoskrnl.exe', 'vmcompute.exe', 'VmComputeAgent.exe', 'CmService.dll', 'rdsdwmdr.dll', 'rdsxvmaudio.dll']
+all_list = ['hvsicontainerservice.dll', 'hvsifiletrust.dll', 'hvsimgrps.dll', 'hvsiofficeiconoverlayshellextension.dll', 'hvsicontainerservice.dll', 'hvsiDspdvcclient.dll', 'hvsirdpclient.exe', 'hvsifiletrust.dll', 'hvsimgr.exe', 'HvsiMachinePolicies.dll', 'hvsimgrps.dll', 'hvsiofficeiconoverlayshellextension.dll', 'HvsiSettingsProvider.dll', 'Provider.dll', 'hvsimgr.exe', 'hvsirdpclient.exe', 'HvsiSettingsWorker.exe', 'hvsicontainerservice.dll', 'hvsigpext.dll', 'AuditSettingsProvider.dll', 'madrid.dll', 'cmclient.dll', 'vmcompute.dll', 'vmcomputeeventlog.dll', 'VmComputeProxy.dll', 'hnsproxy.dll', 'HostNetSvc.dll', 'CmService.dll', 'NetMgmtIF.dll', 'NvAgent.dll', 'vmsif.dll', 'vmsifcore.dll', 'vmsifproxystub.dll', 'VmSynthNic.dll', 'gns.dll', 'vmdynmem.dll', 'vmflexio.dll', 'vmiccore.dll', 'vmpmem.dll', 'vmserial.dll', 'vmsmb.dll', 'vmsynthstor.dll', 'vmuidevices.dll', 'VrdUmed.dll', 'gpupvdev.dll', 'vmchipset.dll', 'ActivationVdev.dll', 'vmwp.exe', 'sbresources.dll', 'rdp4vs.dll', 'UtilityVmSysprep.dll', 'vmbuspiper.dll', 'vmbusvdev.dll', 'VmCrashDump.dll', 'vmprox.dll', 'vmusrv.dll', 'vmvirtio.dll', 'vmwpctrl.dll', 'vmwpevents.dll', 'vfpapi.dll', 'vp9fs.dll', 'vmsmb.dll', 'icsvc.dll', 'icsvcext.dll', 'vid.dll', 'winhvplatform.dll', 'winhvemulation.dll', 'ComputeLegacy.dll', 'ComputeStorage.dll', 'ComputeCore.dll', 'DeviceVirtualization.dll', 'ComputeNetwork.dll', 'rdvvmtransport.dll', 'RdvgmProxy.dll', 'vmstaging.dll', 'HyperVSysprepProvider.dll', 'hgattest.dll', 'hgsclientplugin.dll', 'hgclientservice.dll', 'hgclientserviceps.dll', 'hgsclientplugin.dll', 'HgsClientWmi.dll', 'HostGuardianServiceClientResources.dll', 'NetMgmtIF.dll', 'rdp4vs.dll', 'NvAgent.dll', 'rtpm.dll', 'RdvgmProxy.dll', 'RdvGpuInfo.dll', 'RemoteFileBrowse.dll', 'TpmEngUM.dll', 'synth3dvideoproxy.dll', 'vmstaging.dll', 'vmsynth3dvideo.dll', 'vmsynthfcvdev.dll', 'vmtpm.dll', 'VmDataStore.dll', 'vmdebug.dll', 'vpcievdev.dll', 'vmemulateddevices.dll', 'VmEmulatedNic.dll', 'VmEmulatedStorage.dll', 'vmhgs.dll', 'vmicrdv.dll', 'vsconfig.dll', 'vmicvdev.dll', 'vmmsprox.dll', 'utilityVid.sys', 'hvsifltr.sys', 'vmswitch.sys', 'VmsProxy.sys', 'VmsProxyHNic.sys', 'l2bridge.sys', 'vfpext.sys', 'NdisVirtualBus.sys', 'wcifs.sys', 'hvsocketcontrol.sys', 'hvsocket.sys', 'storvsp.sys', 'passthruparser.sys', 'vhdparser.sys', 'pvhdparser.sys', 'vpcivsp.sys', 'storvsc.sys', 'vmbkmclr.sys', 'vmbkmcl.sys', 'vmbusr.sys', 'vmbus.sys', 'VMBusHID.sys', 'hyperkbd.sys', 'HyperVideo.sys', 'winhvr.sys', 'winhv.sys', 'vid.sys', 'hvservice.sys', 'hvix64.exe', 'hvcrash.sys', 'vhdmp.sys', 'vmgencounter.sys', 'vmgid.sys', 'pcip.sys', 'Synth3dVsp.sys', 'ramparser.sys', 'vmsvcext.sys', 'lunparser.sys', 'vkrnlintvsc.sys', 'vkrnlintvsp.sys', 'hnsdiag.exe', 'hvsimgr.exe', 'hvsiproxyapp.exe', 'hvsirdpclient.exe', 'hvsirpcd.exe', 'hvsievaluator.exe', 'HvsiSettingsWorker.exe', 'wdagtool.exe', 'CExecSvc.exe', 'cmdiag.exe', 'cmimageworker.exe', 'vmcompute.exe', 'VmComputeAgent.exe', 'wcsetupagent.exe', 'hcsdiag.exe', 'vfpctrl.exe', 'nmbind.exe', 'nmscrub.exe', 'nvspinfo.exe', 'vmwp.exe', 'WindowsSandbox.exe', 'hvc.exe', 'hnsdiag.exe', 'rdvgm.exe', 'vmplatformca.exe', 'vmsp.exe', 'vmconnect.exe', 'vmms.exe', 'Hvsigpext.dll', 'rdbss.sys', 'wcifs.sys', 'ntoskrnl.exe', 'vmcompute.exe', 'VmComputeAgent.exe', 'CmService.dll', 'rdsdwmdr.dll', 'rdsxvmaudio.dll']
 # all_list based on https://github.com/gerhart01/Hyper-V-Internals/blob/master/Hyper-V%20components.pdf
 
-except_list = ['computelegacy.dll', 'provider.dll', 'utilityvid.sys', 'devicevirtualization.dll', 'l2bridge.sys', 'vkrnlintvsp.sys', 'vmcomputeeventlog.dll']
+container_list = ['cmclient.dll', # - Windows Container Manager client library
+'vmcompute.dll', # - Hyper-V Host Compute Service Library
+'vmcomputeeventlog.dll', # - Hyper-V Compute Event Log Resource Dll
+'VmComputeProxy.dll', # - Hyper-V Compute Component Proxy
+'hnsproxy.dll', # - Host Network Service proxy library
+'HostNetSvc.dll', # - Host Network Service
+'CmService.dll', # - Container Manager Service
+'computestorage.dll']
+
+WDAG_list = [
+'hvsicontainerservice.dll', #- Windows Defender Application Guard Container Service
+'hvsiDspdvcclient.dll', #- HVSI DVC (dynamic virtual channel) library. Used by hvsirdpclient.exe
+'hvsifiletrust.dll', #- HVSI file trust lib. Used by hvsimgr.exe
+'HvsiMachinePolicies.dll', #- Get settings for HVSI from registry
+'hvsimgrps.dll', #- Windows Defender Application Guard Proxy Stub Dll
+'hvsiofficeiconoverlayshellextension.dll', #- Microsoft Office inside WDAG auxiliary library
+'HvsiSettingsProvider.dll', #- Windows Defender Application Guard Hvsi Settings Provider.dll. Used by hvsimgr.exe, hvsirdpclient.exe, HvsiSettingsWorker.exe, hvsicontainerservice.dll
+'hvsigpext.dll', #- Windows Defender Application Guard Group Policy Extention
+'AuditSettingsProvider.dll', #- HVSI audit settings provider dll (Microsoft.Windows.HVSI.AuditSettings)
+]
+
+except_list = ['computelegacy.dll', 'provider.dll', 'utilityvid.sys', 'devicevirtualization.dll', 'l2bridge.sys', 'vkrnlintvsp.sys', 'vmcomputeeventlog.dll',
+'ComputeCore.dll', 'ComputeNetwork.dll',
+'vmbkmcl.sys']
 
 
 start_list = list(set(all_list))
@@ -147,74 +178,88 @@ def get_patch_info(winver, time_month):
 
 def help():
     print("""
-    this.py winver date
-        this.py 1809 202206
-    this.py winver date name folder
-        this.py 1809 202206 vmbkmclr.sys D:\\tmp\\
+    this.py  date winver name folder
+        this.py  202206 1809 vmbkmclr.sys D:\\tmp\\
+    this.py cmp mounth winver1 winver2 ...
+        this.py 202206 1809
+        this.py 202206 1809 20H2 11-21H1
     winver: ['1703', '1507', '1607','1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2'(-22H2)]""")
     exit(0)
 
 def main():
     winvers = ['1703', '1507', '1607','1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2']
-    if len(sys.argv) == 3:
-        winver = sys.argv[1]
-        if winver not in winvers:
-            help()
-        
+    if sys.argv[1] == 'cmp':
         time_month = int(sys.argv[2], 10)
-        result = get_patch_info(winver, time_month)
         names = []
-        for each in result:
-            names.append(each[0])
-            # print(each[1])
-        print(names)
-    elif len(sys.argv) == 4:
-        winver = sys.argv[1]
-        if winver not in winvers:
-            help()
+        one_result = []
+        for i in range(len(sys.argv)-3):
+            winver = sys.argv[3+i]
+            if winver not in winvers:
+                help()    
+            result = get_patch_info(winver, time_month)
+            if i == 0:
+                for each in result:
+                    names.append(each[0])
+                one_result = result[:]
+            else:
+                tmp = []
+                # print(result)
+                for each in result:
+                    if each[0] in names:
+                        tmp.append(each[0])
+                names = tmp[:]
+                one_result = []
 
-        winver2 = sys.argv[2]
-        if winver2 not in winvers:
-            help()
-        
-        time_month = int(sys.argv[3], 10)
-        result = get_patch_info(winver, time_month)
-        result2 = get_patch_info(winver2, time_month)
 
-        names = []
-        for each in result:
-            names.append(each[0])
-            # print(each[1])
-        for each in result2:
-            if each[0] in names:
-                print(each[0])
+
+        print("-----------------result-------------------------")
+        if not one_result == []:
+            for each in one_result:
+                print(each)
+        names = sorted(names)
+        for each in names:
+            if check_item_in_list_ignore_case(each, WDAG_list):
+                print(each, "WDAG")
+            elif check_item_in_list_ignore_case(each, container_list):
+                print(each, 'Container')
+            else:
+                print(each)
         # print(names)
 
     elif len(sys.argv) == 5:
-        winver = sys.argv[1]
+        winver = sys.argv[2]
         if winver not in winvers:
             help()
         
-        time_month = int(sys.argv[2], 10)
+        time_month = int(sys.argv[1], 10)
         time_start = time_month*100
         target_file = sys.argv[3]
         download_folder = sys.argv[4]
-        result = get_file_info(target_file, winver, (time_start-10000, time_start+15))
+        result = get_file_info(target_file, winver, (time_start-20000, time_start+15))
         print(result[-1])
+        if len(result) == 1:
+            print("++++++++++only get one in the past 2 years++++++++++++++++")
+            cur = result[-1]
+            link = get_download_link(target_file, cur['file_id'])
+            path = os.path.join(download_folder, winver+ '_' + cur['release_date']+'_'+target_file)
+            if not os.path.exists(path):
+                print('\nget', path)
+                wget.download(link, path)
+            return
         print(result[-2])
         if result[-1]['file_id'] == result[-2]['file_id']:
             print("same")
             return
         cur = result[-1]
         link = get_download_link(target_file, cur['file_id'])
-        path = os.path.join(download_folder, cur['release_date']+'-'+target_file)
+        path = os.path.join(download_folder, winver+ '_' + cur['release_date']+'_'+target_file)
         if not os.path.exists(path):
             print('\nget', path)
             wget.download(link, path)
 
         cur = result[-2]
         link = get_download_link(target_file, cur['file_id'])
-        path = os.path.join(download_folder, cur['release_date']+'-'+target_file)
+        path = os.path.join(download_folder, winver+ '_' + cur['release_date']+'_'+target_file)
         if not os.path.exists(path):
             print('\nget', path)
             wget.download(link, path)
