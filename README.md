@@ -2,6 +2,8 @@
 A collection of my scripts for research
 
 ## ida_rop_gadgets_search.py
+search rop gadgets by ida
+
 ```
 Usage:
 1. run script in ida output windows
@@ -34,7 +36,8 @@ functions:
 						['1E4AC5', 'mov     rdx, rax', 'xor     eax, eax', 'test    rdx, rdx', 'jz      short locret_1E4A90']  
 						['360190', 'sub     rdx, rax', 'mov     eax, [rcx+rdx]', 'retn']  
 						['3B5A11', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']  
-						['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']  
+						['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
+
 ```
 
 ## gdb_ida_vmx_locate_svga_function_symbol.py
@@ -87,12 +90,14 @@ for i in a:
 
 ## winindex_patch_info.py
 A script to find what file changed of hyper-v's components, based on [winbindex](https://winbindex.m417z.com)
+> Before use it, make sure you has folder `D:\tmp\tmp_index\`, if you needs new file info, make sure you deleted json files in that folder, let script auto download it again.
+
 ```
 Useage:
     this.py  date winver name folder
         this.py  202206 1809 vmbkmclr.sys D:\\tmp\\
     this.py cmp mounth winver1 winver2 ...
-        this.py 202206 1809
-        this.py 202206 1809 20H2 11-21H1
+        this.py cmp 202206 1809
+        this.py cmp 202206 1809 20H2 11-21H1
     winver: ['1703', '1507', '1607','1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2'(-22H2)]
 ```   
