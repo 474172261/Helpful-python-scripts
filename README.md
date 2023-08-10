@@ -19,7 +19,7 @@ functions:
 		eg: search_stack_reverse_gadgets(); search_stack_reverse_gadgets(step = 5); search_stack_reverse_gadgets(start= xxxx, end=xxx, limit_ret = 4)  
   
 		search_rop_gadgets(pattern, count = 10, limit= 6)  
-				pattern: list of instructions with regex. eg: ['pop *rdi']; ['mov *\\[rdi\\], rax','pop *rax']  
+				pattern: list of instructions with regex. eg: ['pop *rdi']; ['mov *\[rdi\], rax','pop *rax']  
 				count  : max results to find  
 				limit  : max instructions after pattern  
 		eg: search_rop_gadgets(['pop *rdi'], limit = 2)   
