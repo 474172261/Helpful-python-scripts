@@ -44,7 +44,7 @@ def correct_imported_func_name_addr():
 
 
 def quick_search_assign_reg(reg, reg_src = '', count = 100, limit = 3, no_condition_jmp = True):
-	regs = ['rax', 'rbx', 'rcx','rdx','rdi','rsi','rsp','rbp','r8','r9','r10','r11','r12','r13','r14','r15','sp']
+	regs = ['rax', 'rbx', 'rcx','rdx','rdi','rsi','rsp','rbp','r8','r9','r10','r11','r12','r13','r14','r15','sp', 'spl']
 	if reg not in regs:
 		print("wrong reg name")
 		print("avaliable:", regs)
@@ -68,38 +68,6 @@ def quick_search_assign_reg(reg, reg_src = '', count = 100, limit = 3, no_condit
 		print('--'+each+'--')
 	search_rop_gadgets(pattern, count, limit, no_condition_jmp)
 
-def search_special_gadgets(pattern, count = 10, limit= 6):
-	index = 0
-	record = []
-	if not len(pattern):
-		print("no pattern")
-		return
-	start = segs['.text'][0]
-	end = segs['.text'][1]
-	print(hex(start), hex(end))
-	for ea in range(start, end):
-		x = idautils.DecodeInstruction(ea)
-		if not x:
-			continue
-		ret = idc.generate_disasm_line(ea, 1)
-		l1 = x.size
-		for each_pattern in pattern:
-			if re.findall(each_pattern, ret, re.IGNORECASE):# mov\w* +\[rcx.*\], rdx
-				codes = ['{:X}'.format(ea), ret]
-				record.append(codes)
-				print(codes)
-				index+=1
-				continue
-
-		if index > count:
-			break
-	print('-'*30)
-	print("result:")
-	for i in record:
-		print(i)
-	print("get result count:{0:d}".format(len(record)))
-	print("end")
-
 def search_rbp_gadgets(pattern):
 	record = []
 	start = segs['.text'][0]
@@ -111,63 +79,61 @@ def search_rbp_gadgets(pattern):
 	for ea in range(start, end):	
 		x = idautils.DecodeInstruction(ea)
 		if not x:
-			ea += 1
 			continue
 		ret = idc.generate_disasm_line(ea, 1)
 		l1 = x.size
-		if re.findall(pattern, ret, re.IGNORECASE):
-			flag_has_rdi_rbp = True
-			record_rbp_ea = ea
-			tmp_codes = []
-		if flag_has_rdi_rbp:
-			# print("len", len(tmp_codes), hex(record_rbp_ea))
-			tmp_codes.append(ret)
-			if len(tmp_codes) > 8: # if more than 8 instructions don't has call rxx, record again
-				tmp_codes = []
-				flag_has_rdi_rbp = False
-		if flag_has_rdi_rbp and re.findall('call *r', ret, re.IGNORECASE):
-			flag_has_rdi_rbp = False
-			tmp_codes = []
-
-			# print("get call {:x}".format(ea))
-			func_addr = idaapi.get_func(ea)
-			ea_of_func_begin = func_addr.start_ea
-			flag_rbp_base = False
-			for i in range(12):
-				x2 = idautils.DecodeInstruction(ea_of_func_begin)
-				if not x2:
-					ea_of_func_begin += 1
-					continue
-				ret2 = idc.generate_disasm_line(ea_of_func_begin, 1)
-				l2 = x2.size
-				if re.findall('mov *rbp, rsp', ret2, re.IGNORECASE):
-					# print("get rbp base:{:x}".format(ea_of_func_begin))
-					flag_rbp_base = True
-				if flag_rbp_base:
-					if re.findall('sub *rsp, \\d', ret2, re.IGNORECASE):
-						offset = ret2[13:-1]
-						if offset.startswith('0'):
-							offset = offset[1:]
-						if not len(offset):
-							break # only 1 number
-						# print("off",offset, hex(func_addr.start_ea))
-						offset = int(offset, 16)
-						if offset >= 0x78 and offset <=0x2080:
-							# print("get rsp sub:{:x}".format(ea_of_func_begin))
-							record.append((func_addr.start_ea, ea, record_rbp_ea))
-							print("get one record:{:X}, {:x}, {:x}".format(func_addr.start_ea, ea, record_rbp_ea))
-						break
-				ea_of_func_begin += l2
-				# print("add len,", l2)
-		ea += l1
-		# print("add main len,", l1)
+		if not re.findall(pattern, ret, re.IGNORECASE):
+			continue
+		ea2 = ea+l1
+		# search in 8 instructions
+		for n in range(8):
+			x2 = idautils.DecodeInstruction(ea2)
+			if not x2:
+				# print("unknow error", x2, hex(ea2))
+				break # means exist invalid code
+			ret2 = idc.generate_disasm_line(ea2, 1)
+			l2 = x.size
+			if re.findall('call *r', ret2, re.IGNORECASE) or re.findall('jmp *r', ret2, re.IGNORECASE) or re.findall('call *qword ptr \[r', ret2, re.IGNORECASE):
+				# print("get call {:x}".format(ea))
+				func_addr = idaapi.get_func(ea)
+				ea_of_func_begin = func_addr.start_ea
+				flag_rbp_base = False
+				# only search 12 instructions to check rsp offset
+				for m in range(12):
+					x3 = idautils.DecodeInstruction(ea_of_func_begin)
+					if not x3:
+						print("unknow error2", x3, hex(ea_of_func_begin))
+						raise(1)
+					ret3 = idc.generate_disasm_line(ea_of_func_begin, 1)
+					l3 = x3.size
+					if re.findall('mov *rbp, rsp', ret3, re.IGNORECASE):
+						# print("get rbp base:{:x}".format(ea_of_func_begin))
+						flag_rbp_base = True
+					if flag_rbp_base:
+						if re.findall('sub *rsp, \\d', ret3, re.IGNORECASE):
+							offset = ret3[13:-1]
+							if offset.startswith('0'):
+								offset = offset[1:]
+							if not len(offset):
+								break # only 1 number
+							# print("off",offset, hex(func_addr.start_ea))
+							offset = int(offset, 16)
+							if offset >= 0x78 and offset <=0x2080:
+								# print("get rsp sub:{:x}".format(ea_of_func_begin))
+								record.append((func_addr.start_ea, ea2, ea))
+								print("get one record:{:X}, {:x}, {:x}".format(func_addr.start_ea, ea2, ea))
+							break
+					ea_of_func_begin += l3
+				break # end search "call reg"
+			ea2 += l2
+			# print("add main len,", l1)
 	print("-"*30)
 	for each in record:
 		print("{:X}, {:x}, {:x}".format(each[0], each[1], each[2]))
 	print("end")
 
-def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, need_bypass_cfg = False):
-	index = 0
+def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, need_bypass_cfg = False, no_need_return = False):
+	finding_count = 0
 	record = []
 	if not len(pattern):
 		print("no pattern")
@@ -184,6 +150,11 @@ def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, n
 		for each_pattern in pattern:
 			if re.findall(each_pattern, ret, re.IGNORECASE):# mov\w* +\[rcx.*\], rdx
 				codes = ['{:X}'.format(ea), ret]
+				if no_need_return:
+					print(codes)
+					record.append(codes)
+					finding_count += 1
+					continue
 				l = l1
 				for i in range(limit):
 					x = idautils.DecodeInstruction(ea+l)
@@ -209,10 +180,10 @@ def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, n
 
 						print(codes)
 						record.append(codes)
-						index += 1
+						finding_count += 1
 						break
 
-		if index > count:
+		if finding_count > count:
 			break
 	print('-'*30)
 	print("result:")
@@ -240,7 +211,7 @@ def check_ret_in_range(ea, limit_ret):
 		return 1, behind_ins
 	return 0, []
 
-def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8):
+def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8, is_32bit_support = False):
 	record = []
 	if not start:
 		print(hex(segs['.text'][0]), hex(segs['.text'][1]))
@@ -269,7 +240,11 @@ def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8):
 		# 				record.append(['0',hex(ea), ret, ins])
 		# 	continue
 		if not 'rsp' in ret:
-			continue
+			if is_32bit_support:
+				if not 'esp' in ret:
+					continue
+			else:
+				continue
 		if ret.startswith('pop'):
 			# print(hex(ea))
 			n = step
@@ -314,8 +289,10 @@ def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8):
 				flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret)
 				if flag_has_ret:
 					record.append(['2',hex(ea),ret]+behind_ins)
+			else:
+				print(hex(ea), ret)
 		elif ret.startswith('mov'):
-			if 'rsp,' in ret.split():
+			if 'rsp,' in ret.split() or (is_32bit_support and 'esp,' in ret.split()):
 				flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret)
 				if flag_has_ret:
 					record.append(['3',hex(ea),ret]+behind_ins)
