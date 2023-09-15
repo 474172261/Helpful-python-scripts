@@ -100,4 +100,8 @@ Useage:
         this.py cmp 202206 1809
         this.py cmp 202206 1809 20H2 11-21H1
     winver: ['1703', '1507', '1607','1709', '1803', '2004', '1903', '1909', '1809', '11-21H2', '11-22H2', '20H2'(-22H2)]
-```   
+```
+
+## ida_highlight_signed_compare.py
+useage: put file into ida's plugin folder, eg: C:\Users\your user name\AppData\Roaming\Hex-Rays\IDA Pro\plugins\, then, close your ida, and reopen it, double click white space in pseudocode window, the signed compare backgroud color will be set to green. If you want to clear it, just press `F5`.
+
