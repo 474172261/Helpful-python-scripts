@@ -50,7 +50,7 @@ class MyHooks(idaapi.Hexrays_Hooks):
                 if ret and pitem.it:
                     asm_ea = pitem.it.ea
                     asm_line = idc.GetDisasm(asm_ea)
-                    if any(op in asm_line for op in ['jg', 'jng', 'jl', 'jge', 'jle', 'jnl', 'js']):
+                    if any(op in asm_line for op in ['jg', 'jng', 'jl', 'jge', 'jle', 'jnl', 'js', 'jns', 'cmovg', 'cmovge', 'cmovl', 'cmovle', 'cmovs', 'cmovns']):
                         # idaapi.tag_remove(line.line)
                         # if Enable_Signed_TAG:
                             line.bgcolor = 0x55ff55 # green
