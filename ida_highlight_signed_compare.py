@@ -65,7 +65,7 @@ class MyHooks(idaapi.Hexrays_Hooks):
         #     print("enable tag")
         #     Enable_Signed_TAG = True
         ida_kernwin.refresh_idaview_anyway()
-        return 1
+        return 0
 
 def PLUGIN_ENTRY():
     return Signed_compare_highlight()
