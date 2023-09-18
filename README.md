@@ -103,6 +103,19 @@ Useage:
 ```
 
 ## ida_highlight_signed_compare.py
+This script helps you check signed conditions in pseudocode windows, it will help you to find a bug like this:
+```
+struct aa{
+......
+   int f1;
+} x;
+char b[16];
+x.f1 = *(int*)value_ptr_we_controlled;
+......
+if(x.f1 > 15) x.f1 = 15;
+memset(b, 0, x.f1);
+```
+
 useage: 
 1. put file into ida's plugin folder, eg: C:\Users\your user name\AppData\Roaming\Hex-Rays\IDA Pro\plugins\
 2. reload IDA
