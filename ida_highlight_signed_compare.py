@@ -4,7 +4,7 @@ import ida_kernwin
 
 
 # Enable_Signed_TAG = True
-class Signed_compare_highlight(idaapi.plugin_t):
+class MyPlugin(idaapi.plugin_t):
     flags = 0
     comment = "A plugin to highlight signed compare"
     help = "Auto highlight signed compare"
@@ -46,15 +46,17 @@ class MyHooks(idaapi.Hexrays_Hooks):
                 phead = idaapi.ctree_item_t()
                 pitem = idaapi.ctree_item_t()
                 ptail = idaapi.ctree_item_t()
-                ret = decompiler.get_line_item(line.line, 0, False, phead, pitem, ptail)
-                if ret and pitem.it:
-                    asm_ea = pitem.it.ea
-                    asm_line = idc.GetDisasm(asm_ea)
-                    if any(op in asm_line for op in ['jg', 'jng', 'jl', 'jge', 'jle', 'jnl', 'js', 'jns', 'cmovg', 'cmovge', 'cmovl', 'cmovle', 'cmovs', 'cmovns']):
-                        # idaapi.tag_remove(line.line)
-                        # if Enable_Signed_TAG:
-                            line.bgcolor = 0x55ff55 # green
-                            # print("highlighted 1 line")
+                for x in range(150):# I just assume this line contains max 150 characters
+                    ret = decompiler.get_line_item(line.line, x, False, phead, pitem, ptail)
+                    if ret and pitem.it:
+                        asm_ea = pitem.it.ea
+                        asm_line = idc.GetDisasm(asm_ea)
+                        if any(op in asm_line for op in ['jg', 'jng', 'jl', 'jge', 'jle', 'jnl', 'js', 'jns', 'cmovg', 'cmovge', 'cmovl', 'cmovle', 'cmovs', 'cmovns']):
+                            # idaapi.tag_remove(line.line)
+                            # if Enable_Signed_TAG:
+                                line.bgcolor = 0x55ff55 # green
+                                print("highlighted 1 line")
+                                break
                         # else:
                             # idaapi.tag_remove(line.line)
                             # print("remove 1 line tag")
@@ -64,8 +66,9 @@ class MyHooks(idaapi.Hexrays_Hooks):
         # else:
         #     print("enable tag")
         #     Enable_Signed_TAG = True
+        print("signed highlight")
         ida_kernwin.refresh_idaview_anyway()
         return 0
 
 def PLUGIN_ENTRY():
-    return Signed_compare_highlight()
+    return MyPlugin()
