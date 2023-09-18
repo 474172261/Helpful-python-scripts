@@ -108,9 +108,6 @@ useage:
 2. reload IDA
 3. double click white space in pseudocode window, the signed compare backgroud color will be set to green.
 > If you want to clear it, just press `F5`.
-
-
-**Notice, it may fail to highlight for some special condition, I will update it if I fixed it**
-
+> 2023/9/18: update news, support multiple conditions in one line(notice, length of line must be smaller than 150, if you want to support more longer, change script by yourself)
 
 ![image](https://github.com/474172261/Helpful-python-scripts/blob/main/demo-signed_compare_highlight.gif)
