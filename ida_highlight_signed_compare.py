@@ -51,7 +51,7 @@ class MyHooks(idaapi.Hexrays_Hooks):
                         asm_ea = pitem.it.ea
                         asm_line = idc.GetDisasm(asm_ea)
                         # print(asm_line, hex(asm_ea))
-                        if 'cmp' in asm_line:# cmovl won't appear in this loop, so we need to check following assembly, I guess we can find jmp in 6 instructions.
+                        if any(op in asm_line for op in ['cmp', 'sub', 'add', 'adc', 'inc', 'xadd', 'sbb', 'dec', 'neg', 'cmpxchg', 'mul', 'imul']): # these instructions will change SF flag, we check following 6 instructions to find condition jump.
                             flag = 0
                             for i in range(6):
                                 x3 = idautils.DecodeInstruction(asm_ea)
@@ -61,8 +61,8 @@ class MyHooks(idaapi.Hexrays_Hooks):
                                 if any(op in asm_line for op in ['jg', 'jng', 'jl', 'jge', 'jle', 'jnl', 'js', 'jns', 'cmovg', 'cmovge', 'cmovl', 'cmovle', 'cmovs', 'cmovns']):
                                     flag = 1 # yes, we found condition jump
                                     break
-                                elif any(op in asm_line for op in ['ja', 'jb', 'jz', 'jnz', 'cmove', 'cmovne', 'cmova', 'cmovae', 'cmovb', 'cmovbe', 'jae', 'jbe', 'jmp']):
-                                    break # if we find other jump, we assume that it's not signed jump. this may ignore some special cases.
+                                elif any(op in asm_line for op in ['ja', 'jb', 'jz', 'jnz', 'cmove', 'cmovne', 'cmova', 'cmovae', 'cmovb', 'cmovbe', 'jae', 'jbe', 'jmp', 'cmovp', 'cmovnp']):
+                                    break # or, we found unexpected condition jump, stop
                             if flag:
                                 line.bgcolor = 0x55ff55 # green
                                 print("highlighted 1 line")
