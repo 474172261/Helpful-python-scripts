@@ -29,30 +29,6 @@ def format_ida_pseudocode_line(line):
     return ' '.join(rest)
 
 g = None
-def print_arg1_in_new_line(pseudocode, func_name):
-    global g
-    flag = 0
-    c = 0
-    arg1 = None
-    g = []
-    for line in pseudocode:
-        g.append(line.line)
-        if flag:
-            if not arg1:
-                _line = format_ida_pseudocode_line(line.line)
-                print(_line)
-                # print(re.findall('(0?x?\w+)u?', _line))
-                arg1 = re.findall('(0?x?\w+)u?', _line)[0]
-                break
-            # if not callback
-        if func_name in line.line:
-            flag = 1
-    arg1 = arg1.replace('u', '')
-    if arg1.startswith('0x'):
-        arg1 = int(arg1, 16)
-    else:
-        arg1 = int(arg1, 10)
-    return arg1
 
 def print_arg3(pseudocode, func_name, arg_index):
     global g
@@ -89,6 +65,9 @@ def print_arg3(pseudocode, func_name, arg_index):
                 regex = '\(.*?,.*?, (.*?),'
             elif arg_index == 2:
                 regex = '\(.*?,(.*?),'
+            elif arg_index == 1:
+                regex = '\((.*?),'
+
             ret = re.findall(regex, _line)
             if not len(ret):
                 flag_multi_line = True
@@ -115,18 +94,6 @@ def print_arg3(pseudocode, func_name, arg_index):
     return args
 
 
-def get_func_xref_arg1(ref_func_name, func_ea):
-    for xref in idautils.XrefsTo(func_ea):
-        func_name = get_func_name(xref.frm)
-        if func_name:
-            # print(func_name)
-            decompiler = idaapi.decompile(idc.get_name_ea_simple(func_name))
-            pseudocode = decompiler.get_pseudocode()
-            if pseudocode:
-                arg1 = print_arg1_in_new_line(pseudocode, ref_func_name)
-                print("index: {:d} func: {}".format( arg1, func_name))
-                break
-
 def get_func_xref_arg(ref_func_name, func_ea, arg_index):
     for xref in idautils.XrefsTo(func_ea):
         func_name = get_func_name(xref.frm)
@@ -141,6 +108,3 @@ def get_func_xref_arg(ref_func_name, func_ea, arg_index):
                         print("arg: {} func: {}".format( each[1], func_name))
                     else:
                         print("index: {:d} func: {}".format( each[1], func_name))
-
-
-get_func_xref_arg('CryptDecodeObject', 0x1800A5198, 2)
