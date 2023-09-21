@@ -127,3 +127,8 @@ useage:
 2023/9/21: support more special conditions, eg: `sub`, `add` ... will change SF flag.
 
 ![image](https://github.com/474172261/Helpful-python-scripts/blob/main/demo-signed_compare_highlight.gif)
+
+## ida_get_func_xrefs_arg.py
+a script to find a function's references and its argument value.
+Useage:
+run script in ida python command console. if you want to find 'CryptDecodeObject's references and its arg2, run `get_func_xref_arg('CryptDecodeObject', 0x1800A5198, 2)`
