@@ -134,4 +134,11 @@ useage:
 ## ida_get_func_xrefs_arg.py
 a script to find a function's references and its argument value.
 Useage:
-run script in ida python command console. if you want to find 'CryptDecodeObject's references and its arg2, run `get_func_xref_arg('CryptDecodeObject', 0x1800A5198, 2)`
+run script in ida python command console. if you want to find 'CryptDecodeObject's references and its arg2, run 
+```python
+function_names = [('__imp_CryptDecodeObjectEx', 'CryptDecodeObjectEx'), ('__imp_CryptDecodeObject', 'CryptDecodeObject')]
+for function_name, ref_func_name in function_names:
+    function_address = idc.get_name_ea_simple(function_name)
+    if function_address != 0xffffffffffffffff:
+        get_func_xref_arg(ref_func_name, function_address, 2)
+```
