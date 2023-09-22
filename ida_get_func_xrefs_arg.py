@@ -2,7 +2,7 @@ import idautils
 import idc
 import re
 
-DEBUG = True
+DEBUG = False
 def get_func_name(ea):
     func = idaapi.get_func(ea)
     if func:
@@ -138,3 +138,4 @@ def get_func_xref_arg(ref_func_name, func_ea, arg_index):
         for each in index_list:
             out_string += "index: {:d} func: {}\n".format(each, key)
     print(out_string)
+    print("/"*40+'/'*40)
