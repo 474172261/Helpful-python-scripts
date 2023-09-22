@@ -2,6 +2,7 @@ import idautils
 import idc
 import re
 
+DEBUG = False
 def get_func_name(ea):
     func = idaapi.get_func(ea)
     if func:
@@ -31,7 +32,7 @@ def format_ida_pseudocode_line(line):
 g = None
 
 def print_arg3(pseudocode, func_name, arg_index):
-    global g
+    global g, DEBUG
     flag = 0
     c = 0
     g = []
@@ -41,9 +42,10 @@ def print_arg3(pseudocode, func_name, arg_index):
         _line = format_ida_pseudocode_line(line.line)
         g.append(line.line)
         if flag_multi_line:
-            # print(_line)
+            if DEBUG:
+                print('m', _line)
             c += 1
-            if c == 3:
+            if c == arg_index:
                 flag_multi_line = False
                 ret = re.findall('(\w+) ,', _line)
                 arg3 = ret[0]
@@ -60,7 +62,8 @@ def print_arg3(pseudocode, func_name, arg_index):
                 args.append((1, arg3))
 
         elif func_name in _line.split(' '):
-            # print(_line)
+            if DEBUG:
+                print('1', _line)
             if arg_index == 3:
                 regex = '\(.*?,.*?, (.*?),'
             elif arg_index == 2:
@@ -95,16 +98,23 @@ def print_arg3(pseudocode, func_name, arg_index):
 
 
 def get_func_xref_arg(ref_func_name, func_ea, arg_index):
+    arg_string = ''
+    indexs = ''
     for xref in idautils.XrefsTo(func_ea):
         func_name = get_func_name(xref.frm)
         if func_name:
-            # print(func_name)
+            if DEBUG:
+                print('f', func_name)
             decompiler = idaapi.decompile(idc.get_name_ea_simple(func_name))
             pseudocode = decompiler.get_pseudocode()
             if pseudocode:
                 args = print_arg3(pseudocode, ref_func_name, arg_index)
                 for each in args:
                     if each[0] == -1:
-                        print("arg: {} func: {}".format( each[1], func_name))
+                        arg_string += "arg: {} func: {}\n".format( each[1], func_name)
                     else:
-                        print("index: {:d} func: {}".format( each[1], func_name))
+                        indexs += "index: {:d} func: {}\n".format( each[1], func_name)
+    print(indexs)
+    print(arg_string)
+
+
