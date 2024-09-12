@@ -93,7 +93,7 @@ A script to find what file changed of hyper-v's components, based on [winbindex]
 > Before use it, make sure you has folder `D:\tmp\tmp_index\`, if you needs new file info, make sure you deleted json files in that folder, let script auto download it again.
 
 ```
-Useage:
+Usage:
     this.py  date winver name folder
         this.py  202206 1809 vmbkmclr.sys D:\\tmp\\
     this.py cmp mounth winver1 winver2 ...
@@ -116,7 +116,7 @@ if(x.f1 > 15) x.f1 = 15;
 memset(b, 0, x.f1);
 ```
 
-useage: 
+Usage: 
 1. put file into ida's plugin folder, eg: C:\Users\your user name\AppData\Roaming\Hex-Rays\IDA Pro\plugins\
 2. reload IDA
 3. double click white space in pseudocode window, the signed compare backgroud color will be set to green.
@@ -133,7 +133,7 @@ useage:
 
 ## ida_get_func_xrefs_arg.py
 a script to find a function's references and its argument value.
-Useage:
+Usage:
 run script in ida python command console. if you want to find 'CryptDecodeObject's references and its arg2, run 
 ```python
 function_names = [('__imp_CryptDecodeObjectEx', 'CryptDecodeObjectEx'), ('__imp_CryptDecodeObject', 'CryptDecodeObject')]
@@ -142,3 +142,42 @@ for function_name, ref_func_name in function_names:
     if function_address != 0xffffffffffffffff:
         get_func_xref_arg(ref_func_name, function_address, 2)
 ```
+
+## ida_construct_structure_of_vftable.py
+construct a structure from vftable.
+Usage:
+In ida `IDA View-A` window, select a address start from vftable. for example:
+```
+.rdata:000000018009F608     ??_7_CONX_INFO@CAAUdpServerTransport@@6B@ dq offset ?AddRef@CAAAuthenticateUserSink@@UEAAKXZ
+.rdata:000000018009F608                                             ; DATA XREF: CAAUdpServerTransport::_CONX_INFO::~_CONX_INFO(void)+D↑o
+.rdata:000000018009F608                                             ; CAAUdpServerTransport::HandleNewConnection(ushort *,_GUID,CAAUdpServerTransport::_CONX_INFO * *)+1E5↑o
+.rdata:000000018009F608                                             ; CAAAuthenticateUserSink::AddRef(void)
+.rdata:000000018009F610                     dq offset ?Release@CAABase@@UEAAKXZ ; CAABase::Release(void)
+.rdata:000000018009F618                     dq offset ??_E_CONX_INFO@CAAUdpServerTransport@@UEAAPEAXI@Z ; CAAUdpServerTransport::_CONX_INFO::`vector deleting destructor'(uint)
+.rdata:000000018009F620     ; const CAAUdpServerTransport::CSourceAddrToConxMap::`vftable'
+.rdata:000000018009F620     ??_7CSourceAddrToConxMap@CAAUdpServerTransport@@6B@ dq offset ?OnClear@CSourceAddrToConxMap@CAAUdpServerTransport@@EEAAXPEAU_CONX_INFO@2@@Z
+.rdata:000000018009F620                                             ; DATA XREF: CAAUdpServerTransport::CSourceAddrToConxMap::CSourceAddrToConxMap(void)+31↑o
+.rdata:000000018009F620                                             ; CAAUdpServerTransport::CSourceAddrToConxMap::OnClear(CAAUdpServerTransport::_CONX_INFO *)
+.rdata:000000018009F628     ; const CAAUdpServerTransport::`vftable'{for `CAABase'}
+.rdata:000000018009F628     ??_7CAAUdpServerTransport@@6BCAABase@@@ dq offset ?AddRef@CAAAuthenticateUserSink@@UEAAKXZ
+.rdata:000000018009F628                                             ; DATA XREF: CAAUdpServerTransport::CAAUdpServerTransport(void)+73↑o
+.rdata:000000018009F628                                             ; CAAUdpServerTransport::~CAAUdpServerTransport(void)+37↑o
+.rdata:000000018009F628                                             ; CAAAuthenticateUserSink::AddRef(void)
+.rdata:000000018009F630                     dq offset ?Release@CAABase@@UEAAKXZ ; CAABase::Release(void)
+.rdata:000000018009F638                     dq offset ??_GCAAUdpServerTransport@@UEAAPEAXI@Z ; CAAUdpServerTransport::`scalar deleting destructor'(uint)
+```
+we select `0x18009F608`. 
+1. put the codes of this script into IDA Python console.
+2. call function `construct_vftable(0x18009F608)`
+3. call function `add_my_struct_to_local()`.
+
+you will see the structure 
+```c
+struct CONX_INFO_CAAUdpServerTransport_vtl
+{
+  __int64 (__fastcall *func_AddRef_CAAAuthenticateUserSink_180006ce0_0h)(HTTP_TRANSPORT_CONNECTION_INFO *this);
+  __int64 (__fastcall *func_Release_CAABase_180009370_8h)(HTTP_TRANSPORT_CONNECTION_INFO *this);
+  __int64 (__fastcall *func__E_CONX_INFO_CAAUdpServerTransport_18006d3c0_10h)(CAAUdpServerTransport::_CONX_INFO *this, unsigned int);
+};
+```
+In `Local Types` window.
