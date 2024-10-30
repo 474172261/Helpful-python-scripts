@@ -155,26 +155,32 @@ def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, n
 					record.append(codes)
 					finding_count += 1
 					continue
-				l = l1
+				cur_off = l1 # search behind instructions
+				cur_ea = ea
 				for i in range(limit):
-					x = idautils.DecodeInstruction(ea+l)
+					x = idautils.DecodeInstruction(cur_ea+cur_off)
 					if not x:
 						break
-					n = idc.generate_disasm_line(ea+l, 1)
+					n = idc.generate_disasm_line(cur_ea+cur_off, 1)
 					codes.append(n)
-					l += x.size
+					cur_off += x.size
 					# print n
-					if n.startswith('j'):
-						break
+					# if n[:2] in ['jz','jn','ja','jb','jg','js']:
+					# 	break
 					if 'call' in n:
 						break
 					elif 'jmp' in n:
-						break
+						if 'loc_' in n:# jmp     loc_227CD; jmp     short loc_228C0
+							addr = n.split('loc_')[-1]
+							cur_ea = int(addr, 16)
+							cur_off = 0
+							continue
+						break # jmp rax, jmp xxxx
 					elif 'retf' in n:
 						break
 					elif n.startswith('ret'):
 						if need_bypass_cfg:
-							funcea = idaapi.get_func(ea).start_ea
+							funcea = idaapi.get_func(cur_ea).start_ea
 							if not is_references_contain_special_segment(funcea, '.rdata'):
 								break
 
@@ -192,7 +198,7 @@ def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, n
 	print("get result count:{0:d}".format(len(record)))
 	print("end")
 
-def check_ret_in_range(ea, limit_ret):
+def check_ret_in_range(ea, limit_ret, is_32bit_support = False):
 	behind_ins = []
 	flag_has_ret = 0
 	_step = 0
@@ -204,9 +210,28 @@ def check_ret_in_range(ea, limit_ret):
 		ins = idc.generate_disasm_line(ea+_step, 1)
 		behind_ins.append(ins)
 		_step += x.size
+		if 'leave' in ins: # this means mov rsp, rbp
+			flag_has_ret = 0
+			break
 		if 'ret' in ins:
 			flag_has_ret = 1
 			break
+		if 'jmp' in ins:
+			ins_split = ins.split()
+			x64_jmp_regs = ['rax','rbx','rcx','rdx','r8','r9','r10','r11','r12','r13','r14','r15','rbp','rsp','rdi','rsi']
+			x32_jmp_regs = ['eax','ebx','ecx','edx','ebp','esp','edi','esi']
+			regs = x64_jmp_regs
+			if is_32bit_support:
+				regs = x32_jmp_regs
+			if 'loc_' in ins:# jmp     loc_227CD; jmp     short loc_228C0
+				addr = ins.split('loc_')[-1]
+				ea = int(addr, 16)
+				_step = 0
+				continue
+			elif ins_split[-1] in regs:
+				flag_has_ret = 1
+				break
+
 	if flag_has_ret:
 		return 1, behind_ins
 	return 0, []
@@ -278,7 +303,7 @@ def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8, is
 				if flag:
 					if flag_push:
 						instructions.append(ret)
-						flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret)
+						flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret, is_32bit_support)
 						if flag_has_ret:
 							record.append(instructions+behind_ins)
 					break
@@ -286,16 +311,28 @@ def search_stack_reverse_gadgets(start = 0, end = 0, step = 8, limit_ret = 8, is
 					break
 		elif ret.startswith('xchg'):
 			if not '[' in ret:
-				flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret)
+				flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret, is_32bit_support)
 				if flag_has_ret:
 					record.append(['2',hex(ea),ret]+behind_ins)
-			else:
+			elif ', rsp' in ret:
+				# pass # need to search xchg [rax+xx], rsp
 				print(hex(ea), ret)
 		elif ret.startswith('mov'):
 			if 'rsp,' in ret.split() or (is_32bit_support and 'esp,' in ret.split()):
-				flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret)
+				flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret, is_32bit_support)
 				if flag_has_ret:
 					record.append(['3',hex(ea),ret]+behind_ins)
+		# elif ret.startswith('lea'): many are "lea rsp,[rbp-28h]"
+		# 	if 'rsp,' in ret.split() or (is_32bit_support and 'esp,' in ret.split()):
+		# 		flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret)
+		# 		if flag_has_ret:
+		# 			record.append(['4',hex(ea),ret]+behind_ins)
+		# elif ret.startswith('add'): find "add rsp,rbx"? we don't know rsp's value.
+		# 	if 'rsp, +'
+		# 	if 'rsp,' in ret.split() or (is_32bit_support and 'esp,' in ret.split()):
+		# 		flag_has_ret, behind_ins = check_ret_in_range(ea + cur_size, limit_ret)
+		# 		if flag_has_ret:
+		# 			record.append(['4',hex(ea),ret]+behind_ins)
 
 	print('-'*30)
 	print("result:")
