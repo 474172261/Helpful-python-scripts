@@ -43,7 +43,7 @@ def correct_imported_func_name_addr():
 			pass
 
 
-def quick_search_assign_reg(reg, reg_src = '', count = 100, limit = 3, no_condition_jmp = True):
+def quick_search_assign_reg(reg, reg_src = '', count = 10, limit = 3, no_condition_jmp = True):
 	regs = ['rax', 'rbx', 'rcx','rdx','rdi','rsi','rsp','rbp','r8','r9','r10','r11','r12','r13','r14','r15','sp', 'spl']
 	if reg not in regs:
 		print("wrong reg name")
@@ -167,12 +167,13 @@ def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, n
 					# print n
 					# if n[:2] in ['jz','jn','ja','jb','jg','js']:
 					# 	break
+					JMPS = [idaapi.NN_jmp, idaapi.NN_jmpfi, idaapi.NN_jmpni]
 					if 'call' in n:
 						break
-					elif 'jmp' in n:
-						if 'loc_' in n:# jmp     loc_227CD; jmp     short loc_228C0
-							addr = n.split('loc_')[-1]
-							cur_ea = int(addr, 16)
+					elif x.itype in JMPS:# jmp
+						addr = x.Op1.addr
+						if addr:
+							cur_ea = addr
 							cur_off = 0
 							continue
 						break # jmp rax, jmp xxxx
@@ -202,6 +203,7 @@ def check_ret_in_range(ea, limit_ret, is_32bit_support = False):
 	behind_ins = []
 	flag_has_ret = 0
 	_step = 0
+	JMPS = [idaapi.NN_jmp, idaapi.NN_jmpfi, idaapi.NN_jmpni]
 	for i in range(limit_ret):
 		x = idautils.DecodeInstruction(ea+_step)
 		if not x:
@@ -216,19 +218,13 @@ def check_ret_in_range(ea, limit_ret, is_32bit_support = False):
 		if 'ret' in ins:
 			flag_has_ret = 1
 			break
-		if 'jmp' in ins:
-			ins_split = ins.split()
-			x64_jmp_regs = ['rax','rbx','rcx','rdx','r8','r9','r10','r11','r12','r13','r14','r15','rbp','rsp','rdi','rsi']
-			x32_jmp_regs = ['eax','ebx','ecx','edx','ebp','esp','edi','esi']
-			regs = x64_jmp_regs
-			if is_32bit_support:
-				regs = x32_jmp_regs
-			if 'loc_' in ins:# jmp     loc_227CD; jmp     short loc_228C0
-				addr = ins.split('loc_')[-1]
-				ea = int(addr, 16)
+		if x.itype in JMPS:# jmp
+			addr = x.Op1.addr
+			if addr:
+				ea = addr
 				_step = 0
 				continue
-			elif ins_split[-1] in regs:
+			else:
 				flag_has_ret = 1
 				break
 
