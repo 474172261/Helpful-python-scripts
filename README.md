@@ -171,7 +171,9 @@ we select `0x18009F608`.
 2. call function `construct_vftable(0x18009F608)`
 3. call function `add_my_struct_to_local()`.
 
-you will see the structure 
+or, you can let the mouse cursor stay at `0x18009F608`, run `construct_vftable();add_my_struct_to_local();`.
+
+After these, you will see the structure 
 ```c
 struct CONX_INFO_CAAUdpServerTransport_vtl
 {
