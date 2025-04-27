@@ -53,7 +53,7 @@ def construct_vftable(start = 0):
 		end += 8
 
 	struct_info = {}
-	vf_name = strip_table_name(get_name(start))+'_vtl'
+	vf_name = strip_table_name(get_name(start))+'_{:x}_vtl'.format(start)
 	struct_info['name'] = vf_name
 	fields = []
 	for off in range(start, end, 8):
@@ -72,9 +72,15 @@ def construct_vftable(start = 0):
 			member_types +="  {} (__fastcall*{})(".format(fields[i][2], member_name)
 		args = fields[i][3]
 		for j in range(len(args)):
+			arg_type = str(args[j][1])
+			arg_name = str(args[j][2])
 			if not j == 0:
 				member_types +=","
-			member_types += "{} {}".format(args[j][1], args[j][2])
+			if "fastcall" in arg_type:
+				index = arg_type.index("*")
+				arg_type = arg_type[:index] + arg_name + arg_type[index:]
+				arg_name = ""
+			member_types += "{} {}".format(arg_type, arg_name)
 		member_types += ');\n'
 		if struct_info.get('members'):
 			struct_info['members'].append((member_name, member_types))
@@ -98,10 +104,11 @@ def add_my_struct_to_local():
 		for pos, each in enumerate(members):
 			member_name = each[0]
 			member_type = each[1]
-			print(member_name, member_type)
 			tif = ida_typeinf.tinfo_t()
 			ida_typeinf.parse_decl(tif, None, member_type, 0)
 			ida_struct.add_struc_member(sptr, member_name, -1, idaapi.FF_DATA| idaapi.FF_QWORD, None, 8)
 			ida_struct.set_member_tinfo(sptr, sptr.get_member(pos), 0, tif, ida_struct.SET_MEMTI_COMPATIBLE)
 	else:
 		print("structure already exist!")
+
+# construct_vftable();add_my_struct_to_local()
