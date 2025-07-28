@@ -132,6 +132,94 @@ def search_rbp_gadgets(pattern):
 		print("{:X}, {:x}, {:x}".format(each[0], each[1], each[2]))
 	print("end")
 
+def search_specific_rop_gadgets(reg_name = 'rdi', limit_ret = 10):
+    result1 = []
+    result2 = []
+    start = segs['.text'][0] # 0x00042000004A08C
+    end = segs['.text'][1] # 0x000042000004A0B8
+    print(f"Searching in .text section: {hex(start)} to {hex(end)}")
+    
+    for ea in range(start, end):
+        x = idautils.DecodeInstruction(ea)
+        if not x:
+            continue
+        ret = idc.generate_disasm_line(ea, 1)
+        
+        # Step 1: Match mov X0, [reg_name+X1]
+        pattern1 = rf'mov\s+(\w+),\s*\[{reg_name}\s*\+\s*[0-9a-fA-F]+h?\]'
+        if not re.match(pattern1, ret, re.IGNORECASE):
+            continue
+        
+        x0 = re.match(pattern1, ret, re.IGNORECASE).group(1)
+        codes = [f'{ea:X}', ret]
+        cur_ea = ea
+        cur_off = x.size
+        has_ret = False
+        has_jmp = False
+        # print(codes,'1')
+        # Search within limit_ret instructions for ret and check for jmp
+        for i in range(limit_ret):
+            x = idautils.DecodeInstruction(cur_ea + cur_off)
+            if not x:
+                break
+            n = idc.generate_disasm_line(cur_ea + cur_off, 1)
+            codes.append(n)
+            cur_off += x.size
+            
+            JMPS = [idaapi.NN_jmp, idaapi.NN_jmpfi, idaapi.NN_jmpni]
+            if x.itype in JMPS or 'call' in n:
+                has_jmp = True
+                break
+            if n.startswith('ret'):
+                has_ret = True
+                break
+        
+        if not has_ret or has_jmp:
+            continue
+        
+        # print(codes,'2')
+
+        # Step 2: Check for mov [X0] or mov [X0+X4], X3
+        offset1 = None
+        for idx, inst in enumerate(codes[1:], 1):  # Skip first instruction
+            pattern2 = rf'mov\s*\[{x0}(?:\+[0-9a-fA-F]+)?h?\],\s*(\w+)'
+            if re.match(pattern2, inst, re.IGNORECASE):
+                offset1 = idx
+                x3 = re.match(pattern2, inst, re.IGNORECASE).group(1)
+                result1.append(tuple(codes))
+                # print(codes,'3')
+
+                break
+        
+        # Step 3: Check for mov X3, [reg_name+X2]
+        offset2 = None
+        if offset1:
+            for idx, inst in enumerate(codes[1:], 1):  # Skip first instruction
+                pattern3 = rf'mov\s+{x3},\s*\[{reg_name}\s*\+\s*[0-9a-fA-F]+h?\]'
+                # print(pattern3)
+                if re.match(pattern3, inst, re.IGNORECASE):
+                    offset2 = idx
+                    # print(codes,'4')
+                    break
+        
+        # Step 4: If offset2 exists and offset2 < offset1, add to result2
+        if offset1 is not None and offset2 is not None and offset2 < offset1:
+            result2.append(tuple(codes))
+        
+    # Output results
+    print('-' * 30)
+    print("Result1 (mov X0, [a+X1]; ...; mov [X0], X3 or mov [X0+X4], X3; ...; ret):")
+    for gadget in result1:
+        print(gadget)
+    print(f"Result1 count: {len(result1)}")
+    
+    print('-' * 30)
+    print("Result2 (mov X0, [a+X1]; ...; mov X3, [a+X2]; ...; mov [X0], X3 or mov [X0+X4], X3; ...; ret):")
+    for gadget in result2:
+        print(gadget)
+    print(f"Result2 count: {len(result2)}")
+    print("End")
+    
 def search_rop_gadgets(pattern, count = 10, limit= 6, no_condition_jmp = True, need_bypass_cfg = False, no_need_return = False):
 	finding_count = 0
 	record = []
@@ -383,6 +471,15 @@ def Usage():
 			['360190', 'sub     rdx, rax', 'mov     eax, [rcx+rdx]', 'retn']
 			['3B5A11', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
 			['3B5A12', 'add     rdx, rax', 'lea     rax, [rdi+rdx*2+3Ah]', 'pop     rbp', 'retn']
+
+	search_specific_rop_gadgets(reg_name = 'rdi', limit_ret = 10)
+		reg    : reg name, assign target. 'rdi', 'rax'...
+		limit  : max instructions after pattern
+	eg: search_specific_rop_gadgets('rdi')
+		results:
+			Result2 (mov X0, [a+X1]; ...; mov X3, [a+X2]; ...; mov [X0], X3 or mov [X0+X4], X3; ...; ret):
+('10000049B7E', 'mov     rax, [rdi+48h]', 'mov     [rdx+8], rax', 'mov     rdx, [rdi+40h]', 'mov     [rax], rdx', 'mov     eax, [rdi+8]', 'mov     qword ptr [rdi+40h], 0', 'mov     qword ptr [rdi+48h], 0', 'add     eax, 1', 'mov     [rdi+8], eax', 'xor     eax, eax', 'retn')
+('1000004A08C', 'mov     rdx, [rdi+28h]', 'mov     rax, [rdi+30h]', 'mov     [rdx+8], rax', 'mov     rdx, [rdi+28h]', 'mov     [rax], rdx', 'mov     qword ptr [rdi+28h], 0', 'mov     qword ptr [rdi+30h], 0', 'retn')
 	"""
 	print(usage)
 	print("^-----------check Usage")
